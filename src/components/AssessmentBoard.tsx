@@ -51,10 +51,10 @@ export function AssessmentBoard({
   notes: ReviewNote[];
   evidence: EvidenceFile[];
   organizationId: string;
-  noteDrafts?: Record<string, string>;
-  onNoteDraftChange?: (requirementId: string, value: string) => void;
-  onSaveResponse?: (responseId: string, patch: Partial<ResponseRow>) => void;
-  onEvidenceChanged?: () => void;
+  noteDrafts?: Record<string, string> | undefined;
+  onNoteDraftChange?: ((requirementId: string, value: string) => void) | undefined;
+  onSaveResponse?: ((responseId: string, patch: Partial<ResponseRow>) => void) | undefined;
+  onEvidenceChanged?: (() => void) | undefined;
 }) {
   const [groupMode, setGroupMode] = useState<"principle" | "clause">("principle");
   const responseByRequirement = useMemo(
@@ -149,10 +149,10 @@ function GroupSection({
   evidence: EvidenceFile[];
   mode: Mode;
   organizationId: string;
-  noteDrafts?: Record<string, string>;
-  onNoteDraftChange?: (requirementId: string, value: string) => void;
-  onSaveResponse?: (responseId: string, patch: Partial<ResponseRow>) => void;
-  onEvidenceChanged?: () => void;
+  noteDrafts?: Record<string, string> | undefined;
+  onNoteDraftChange?: ((requirementId: string, value: string) => void) | undefined;
+  onSaveResponse?: ((responseId: string, patch: Partial<ResponseRow>) => void) | undefined;
+  onEvidenceChanged?: (() => void) | undefined;
 }) {
   const [open, setOpen] = useState(true);
   const done = items.filter((i) => isComplete(responseByRequirement.get(i.id))).length;
@@ -215,9 +215,9 @@ function RequirementItem({
   mode: Mode;
   organizationId: string;
   noteDraft: string;
-  onNoteDraftChange?: (requirementId: string, value: string) => void;
-  onSaveResponse?: (responseId: string, patch: Partial<ResponseRow>) => void;
-  onEvidenceChanged?: () => void;
+  onNoteDraftChange?: ((requirementId: string, value: string) => void) | undefined;
+  onSaveResponse?: ((responseId: string, patch: Partial<ResponseRow>) => void) | undefined;
+  onEvidenceChanged?: (() => void) | undefined;
 }) {
   const editable = mode === "edit" && !!response;
   const complete = isComplete(response);
