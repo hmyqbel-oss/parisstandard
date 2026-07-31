@@ -86,7 +86,7 @@ function RequirementsPage() {
       });
       const result = await importRequirements({ data: { rows: payload } });
       await queryClient.invalidateQueries();
-      toast.success(`Imported ${result.count ?? payload.length} requirements`);
+      toast.success(`Imported ${result.imported} requirements`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Import failed");
     } finally {
