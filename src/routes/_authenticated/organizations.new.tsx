@@ -62,9 +62,14 @@ function NewOrganizationPage() {
           login_password: form.login_password,
         },
       });
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
       await queryClient.invalidateQueries();
       toast.success(`Organization created with ${result.requirementCount} requirements`);
       navigate({ to: "/organizations/$id", params: { id: result.organizationId } });
+
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not create organization");
     } finally {
