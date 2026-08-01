@@ -48,7 +48,14 @@ export const createOrganization = createServerFn({ method: "POST" })
       email_confirm: true,
       user_metadata: { full_name: data.name },
     });
-    if (authError || !created.user) throw new Error(authError?.message ?? "Could not create login");
+    if (authError || !created.user) {
+      const raw = authError?.message ?? "Could not create login";
+      const friendly = /already been registered|already exists/i.test(raw)
+        ? "This login email is already in use. Use a different email address."
+        : raw;
+      return { ok: false as const, error: friendly };
+    }
+
 
     const userId = created.user.id;
 
