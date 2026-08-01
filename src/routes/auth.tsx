@@ -24,6 +24,9 @@ export const Route = createFileRoute("/auth")({
       },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: typeof search['redirect'] === "string" ? (search['redirect'] as string) : undefined,
+  }),
   component: AuthPage,
 });
 
@@ -34,6 +37,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { redirect: redirectTo } = Route.useSearch();
   const queryClient = useQueryClient();
 
   async function routeAfterLogin(userId: string) {
@@ -49,6 +53,10 @@ function AuthPage() {
     }
     await queryClient.invalidateQueries();
     const role = roles?.[0]?.role;
+    if (redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
+      navigate({ to: redirectTo });
+      return;
+    }
     if (role === "consultant") navigate({ to: "/dashboard" });
     else if (role === "organization") navigate({ to: "/assessment" });
     else {

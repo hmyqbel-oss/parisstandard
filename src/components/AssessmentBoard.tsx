@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, Paperclip, Trash2, Upload, MessageSquareWarning } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -466,6 +466,13 @@ function Field({
     setLocal(value);
   }
 
+  // Autosave so a page refresh never loses typed text.
+  useEffect(() => {
+    if (disabled || local === value) return;
+    const timer = setTimeout(() => onCommit(local), 900);
+    return () => clearTimeout(timer);
+  }, [local, value, disabled, onCommit]);
+
   return (
     <label className={cn("block", className)}>
       <span className="mb-1.5 block text-xs font-medium text-muted-foreground">{label}</span>
@@ -481,3 +488,4 @@ function Field({
     </label>
   );
 }
+
