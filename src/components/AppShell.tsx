@@ -1,5 +1,13 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Building2, ListChecks, FileBarChart, LogOut, ScrollText } from "lucide-react";
+import {
+  LayoutDashboard,
+  Building2,
+  ListChecks,
+  FileBarChart,
+  LogOut,
+  ScrollText,
+  Settings,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
