@@ -73,7 +73,7 @@ export const createOrganization = createServerFn({ method: "POST" })
       .single();
     if (orgError || !org) {
       await supabaseAdmin.auth.admin.deleteUser(userId);
-      throw new Error(orgError?.message ?? "Could not create organization");
+      return { ok: false as const, error: orgError?.message ?? "Could not create organization" };
     }
 
     await supabaseAdmin.from("profiles").insert({
@@ -89,7 +89,9 @@ export const createOrganization = createServerFn({ method: "POST" })
       .insert({ organization_id: org.id, status: "draft" })
       .select("id")
       .single();
-    if (cycleError || !cycle) throw new Error(cycleError?.message ?? "Could not start cycle");
+    if (cycleError || !cycle) {
+      return { ok: false as const, error: cycleError?.message ?? "Could not start cycle" };
+    }
 
     const { data: requirements } = await supabaseAdmin.from("requirements").select("id");
     if (requirements?.length) {
@@ -98,7 +100,13 @@ export const createOrganization = createServerFn({ method: "POST" })
       );
     }
 
-    return { organizationId: org.id, cycleId: cycle.id, requirementCount: requirements?.length ?? 0 };
+    return {
+      ok: true as const,
+      organizationId: org.id,
+      cycleId: cycle.id,
+      requirementCount: requirements?.length ?? 0,
+    };
+
   });
 
 export const registerConsultant = createServerFn({ method: "POST" })
