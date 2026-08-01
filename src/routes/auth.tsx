@@ -51,20 +51,31 @@ function AuthPage() {
         /* organization users always have a role assigned by the consultant */
       }
     }
-    await queryClient.invalidateQueries();
+    // Drop anything cached for the previously signed-in account.
+    await queryClient.cancelQueries();
+    queryClient.clear();
     const role = roles?.[0]?.role;
-    if (redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
-      navigate({ to: redirectTo });
+    const consultantOnly = ["/dashboard", "/organizations", "/requirements"];
+    const orgOnly = ["/assessment", "/results"];
+    const allowed =
+      !!redirectTo &&
+      redirectTo.startsWith("/") &&
+      !redirectTo.startsWith("//") &&
+      !(role === "organization" && consultantOnly.some((p) => redirectTo.startsWith(p))) &&
+      !(role === "consultant" && orgOnly.some((p) => redirectTo.startsWith(p)));
+    if (allowed && redirectTo) {
+      navigate({ to: redirectTo, replace: true });
       return;
     }
-    if (role === "consultant") navigate({ to: "/dashboard" });
-    else if (role === "organization") navigate({ to: "/assessment" });
+    if (role === "consultant") navigate({ to: "/dashboard", replace: true });
+    else if (role === "organization") navigate({ to: "/assessment", replace: true });
     else {
       setNotice(
         "This account has no role yet. Ask your consultant to create your organization account.",
       );
     }
   }
+
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();

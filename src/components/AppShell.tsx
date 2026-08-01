@@ -1,5 +1,13 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Building2, ListChecks, FileBarChart, LogOut, ScrollText } from "lucide-react";
+import {
+  LayoutDashboard,
+  Building2,
+  ListChecks,
+  FileBarChart,
+  LogOut,
+  ScrollText,
+  Settings,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,12 +19,15 @@ const consultantNav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/organizations", label: "Organizations", icon: Building2 },
   { to: "/requirements", label: "Requirements", icon: ScrollText },
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 const orgNav = [
   { to: "/assessment", label: "My Assessment", icon: ListChecks },
   { to: "/results", label: "Results", icon: FileBarChart },
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
+
 
 export function AppShell({
   title,

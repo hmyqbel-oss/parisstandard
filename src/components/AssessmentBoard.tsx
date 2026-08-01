@@ -243,7 +243,15 @@ function RequirementItem({
           toast.error(`${file.name} is larger than 10MB`);
           continue;
         }
-        const path = `${organizationId}/${response.id}/${Date.now()}-${file.name}`;
+        // Storage keys only accept a safe ASCII subset; keep the real name in the DB row.
+        const dot = file.name.lastIndexOf(".");
+        const ext = dot > 0 ? file.name.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+        const base = (dot > 0 ? file.name.slice(0, dot) : file.name)
+          .replace(/[^a-zA-Z0-9._-]+/g, "-")
+          .replace(/^-+|-+$/g, "")
+          .slice(0, 60);
+        const safeName = `${base || "file"}${ext ? `.${ext}` : ""}`;
+        const path = `${organizationId}/${response.id}/${Date.now()}-${safeName}`;
         const { error: uploadError } = await supabase.storage
           .from("evidence")
           .upload(path, file);
