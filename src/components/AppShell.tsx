@@ -19,12 +19,15 @@ const consultantNav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/organizations", label: "Organizations", icon: Building2 },
   { to: "/requirements", label: "Requirements", icon: ScrollText },
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 const orgNav = [
   { to: "/assessment", label: "My Assessment", icon: ListChecks },
   { to: "/results", label: "Results", icon: FileBarChart },
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
+
 
 export function AppShell({
   title,
