@@ -179,3 +179,249 @@ export const importRequirements = createServerFn({ method: "POST" })
 
     return { imported: rows.length };
   });
+
+export const deleteAssessmentCycle = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ cycleId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: isConsultant } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "consultant",
+    });
+    if (!isConsultant) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: responses } = await supabaseAdmin
+      .from("responses")
+      .select("id")
+      .eq("cycle_id", data.cycleId);
+    const responseIds = (responses ?? []).map((r) => r.id);
+
+    if (responseIds.length) {
+      const { data: files } = await supabaseAdmin
+        .from("evidence_files")
+        .select("file_path")
+        .in("response_id", responseIds);
+      const paths = (files ?? []).map((f) => f.file_path);
+      if (paths.length) await supabaseAdmin.storage.from("evidence").remove(paths);
+      await supabaseAdmin.from("evidence_files").delete().in("response_id", responseIds);
+    }
+
+    await supabaseAdmin.from("review_notes").delete().eq("cycle_id", data.cycleId);
+    await supabaseAdmin.from("responses").delete().eq("cycle_id", data.cycleId);
+    const { error } = await supabaseAdmin
+      .from("assessment_cycles")
+      .delete()
+      .eq("id", data.cycleId);
+    if (error) return { ok: false as const, error: error.message };
+    return { ok: true as const };
+  });
+
+export const deleteOrganization = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ organizationId: z.string().uuid(), deleteUsers: z.boolean().optional() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: isConsultant } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "consultant",
+    });
+    if (!isConsultant) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: cycles } = await supabaseAdmin
+      .from("assessment_cycles")
+      .select("id")
+      .eq("organization_id", data.organizationId);
+    const cycleIds = (cycles ?? []).map((c) => c.id);
+
+    if (cycleIds.length) {
+      const { data: responses } = await supabaseAdmin
+        .from("responses")
+        .select("id")
+        .in("cycle_id", cycleIds);
+      const responseIds = (responses ?? []).map((r) => r.id);
+      if (responseIds.length) {
+        const { data: files } = await supabaseAdmin
+          .from("evidence_files")
+          .select("file_path")
+          .in("response_id", responseIds);
+        const paths = (files ?? []).map((f) => f.file_path);
+        if (paths.length) await supabaseAdmin.storage.from("evidence").remove(paths);
+        await supabaseAdmin.from("evidence_files").delete().in("response_id", responseIds);
+      }
+      await supabaseAdmin.from("review_notes").delete().in("cycle_id", cycleIds);
+      await supabaseAdmin.from("responses").delete().in("cycle_id", cycleIds);
+      await supabaseAdmin.from("assessment_cycles").delete().in("id", cycleIds);
+    }
+
+    const { data: members } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("organization_id", data.organizationId);
+    const memberIds = (members ?? []).map((m) => m.id).filter((id) => id !== context.userId);
+
+    if (data.deleteUsers !== false) {
+      for (const memberId of memberIds) {
+        await supabaseAdmin.from("user_roles").delete().eq("user_id", memberId);
+        await supabaseAdmin.from("profiles").delete().eq("id", memberId);
+        await supabaseAdmin.auth.admin.deleteUser(memberId);
+      }
+    } else {
+      await supabaseAdmin
+        .from("profiles")
+        .update({ organization_id: null })
+        .eq("organization_id", data.organizationId);
+    }
+
+    const { error } = await supabaseAdmin
+      .from("organizations")
+      .delete()
+      .eq("id", data.organizationId);
+    if (error) return { ok: false as const, error: error.message };
+    return { ok: true as const };
+  });
+
+export const listPlatformUsers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isConsultant } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "consultant",
+    });
+    if (!isConsultant) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [{ data: profiles }, { data: roles }, { data: orgs }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id, email, full_name, organization_id, created_at"),
+      supabaseAdmin.from("user_roles").select("user_id, role"),
+      supabaseAdmin.from("organizations").select("id, name"),
+    ]);
+    const roleByUser = new Map((roles ?? []).map((r) => [r.user_id, r.role]));
+    const orgById = new Map((orgs ?? []).map((o) => [o.id, o.name]));
+    return {
+      users: (profiles ?? []).map((p) => ({
+        id: p.id,
+        email: p.email,
+        fullName: p.full_name,
+        role: roleByUser.get(p.id) ?? null,
+        organizationId: p.organization_id,
+        organizationName: p.organization_id ? (orgById.get(p.organization_id) ?? null) : null,
+        createdAt: p.created_at,
+        isSelf: p.id === context.userId,
+      })),
+      organizations: (orgs ?? []).map((o) => ({ id: o.id, name: o.name })),
+    };
+  });
+
+export const createPlatformUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        email: z.string().email().max(200),
+        password: z.string().min(8).max(128),
+        full_name: z.string().max(160).optional().nullable(),
+        role: z.enum(["consultant", "organization"]),
+        organization_id: z.string().uuid().optional().nullable(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: isConsultant } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "consultant",
+    });
+    if (!isConsultant) throw new Error("Forbidden");
+
+    if (data.role === "organization" && !data.organization_id) {
+      return { ok: false as const, error: "Select an organization for this user." };
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: created, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { full_name: data.full_name ?? null },
+    });
+    if (authError || !created.user) {
+      const raw = authError?.message ?? "Could not create user";
+      return {
+        ok: false as const,
+        error: /already been registered|already exists/i.test(raw)
+          ? "This email is already in use."
+          : raw,
+      };
+    }
+
+    const userId = created.user.id;
+    await supabaseAdmin.from("profiles").insert({
+      id: userId,
+      email: data.email,
+      full_name: data.full_name ?? null,
+      organization_id: data.role === "organization" ? (data.organization_id ?? null) : null,
+    });
+    await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: data.role });
+    return { ok: true as const, userId };
+  });
+
+export const updateUserRole = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        userId: z.string().uuid(),
+        role: z.enum(["consultant", "organization"]),
+        organization_id: z.string().uuid().optional().nullable(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: isConsultant } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "consultant",
+    });
+    if (!isConsultant) throw new Error("Forbidden");
+    if (data.userId === context.userId) {
+      return { ok: false as const, error: "You cannot change your own role." };
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
+    const { error } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: data.userId, role: data.role });
+    if (error) return { ok: false as const, error: error.message };
+    await supabaseAdmin
+      .from("profiles")
+      .update({
+        organization_id: data.role === "organization" ? (data.organization_id ?? null) : null,
+      })
+      .eq("id", data.userId);
+    return { ok: true as const };
+  });
+
+export const deletePlatformUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ userId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: isConsultant } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "consultant",
+    });
+    if (!isConsultant) throw new Error("Forbidden");
+    if (data.userId === context.userId) {
+      return { ok: false as const, error: "You cannot delete your own account." };
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
+    await supabaseAdmin.from("profiles").delete().eq("id", data.userId);
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
+    if (error) return { ok: false as const, error: error.message };
+    return { ok: true as const };
+  });
