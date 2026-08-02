@@ -27,7 +27,7 @@ export const Route = createFileRoute("/consultant")({
   validateSearch: (search: Record<string, unknown>) => ({
     redirect: typeof search['redirect'] === "string" ? (search['redirect'] as string) : undefined,
   }),
-  component: ConsultantAuthPage;
+  component: ConsultantAuthPage,
 });
 
 function ConsultantAuthPage() {
