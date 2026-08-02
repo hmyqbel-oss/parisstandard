@@ -27,9 +27,31 @@ export const Route = createFileRoute("/_authenticated/organizations/")({
 });
 
 function OrganizationsPage() {
+  const queryClient = useQueryClient();
   const orgs = useQuery(organizationsQuery());
   const cycles = useQuery(cyclesQuery());
   const latestByOrg = new Map((cycles.data ?? []).map((c) => [c.organization_id, c]));
+
+  async function removeOrganization(id: string, name: string) {
+    if (
+      !window.confirm(
+        `Delete "${name}" with its assessments, evidence and user accounts? This cannot be undone.`,
+      )
+    )
+      return;
+    try {
+      const result = await deleteOrganization({ data: { organizationId: id } });
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      await queryClient.invalidateQueries();
+      toast.success("Organization deleted");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not delete organization");
+    }
+  }
+
 
   return (
     <AppShell
