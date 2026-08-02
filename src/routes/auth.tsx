@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { registerConsultant } from "@/lib/platform.functions";
+import { useRouteAfterLogin } from "@/lib/auth-routing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,16 +10,16 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — Paris Standard Evaluation Platform" },
+      { title: "Organization sign in — Paris Standard Evaluation" },
       {
         name: "description",
         content:
-          "Sign in to the Paris Standard evaluation platform as a consultant or as an evaluated organization.",
+          "Sign in to your organization account to complete the Paris Declaration effectiveness assessment.",
       },
-      { property: "og:title", content: "Sign in — Paris Standard Evaluation Platform" },
+      { property: "og:title", content: "Organization sign in — Paris Standard Evaluation" },
       {
         property: "og:description",
-        content: "Consultant and organization access to the Paris Declaration assessment workspace.",
+        content: "Organization access to the Paris Declaration assessment workspace.",
       },
     ],
   }),
@@ -31,74 +30,21 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const navigate = useNavigate();
   const { redirect: redirectTo } = Route.useSearch();
-  const queryClient = useQueryClient();
-
-  async function routeAfterLogin(userId: string) {
-    let { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-    if (!roles?.length) {
-      try {
-        await registerConsultant();
-        const refreshed = await supabase.from("user_roles").select("role").eq("user_id", userId);
-        roles = refreshed.data ?? [];
-      } catch {
-        /* organization users always have a role assigned by the consultant */
-      }
-    }
-    // Drop anything cached for the previously signed-in account.
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    const role = roles?.[0]?.role;
-    const consultantOnly = ["/dashboard", "/organizations", "/requirements"];
-    const orgOnly = ["/assessment", "/results"];
-    const allowed =
-      !!redirectTo &&
-      redirectTo.startsWith("/") &&
-      !redirectTo.startsWith("//") &&
-      !(role === "organization" && consultantOnly.some((p) => redirectTo.startsWith(p))) &&
-      !(role === "consultant" && orgOnly.some((p) => redirectTo.startsWith(p)));
-    if (allowed && redirectTo) {
-      navigate({ to: redirectTo, replace: true });
-      return;
-    }
-    if (role === "consultant") navigate({ to: "/dashboard", replace: true });
-    else if (role === "organization") navigate({ to: "/assessment", replace: true });
-    else {
-      setNotice(
-        "This account has no role yet. Ask your consultant to create your organization account.",
-      );
-    }
-  }
-
+  const routeAfterLogin = useRouteAfterLogin();
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
     setNotice(null);
     try {
-      if (mode === "signin") {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        if (data.user) await routeAfterLogin(data.user.id);
-      } else {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: window.location.origin },
-        });
-        if (error) throw error;
-        if (!data.session) {
-          setNotice("Check your email to confirm the account, then sign in.");
-        } else if (data.user) {
-          await routeAfterLogin(data.user.id);
-        }
-      }
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      if (data.user) await routeAfterLogin(data.user.id, redirectTo, setNotice);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Authentication failed");
     } finally {
@@ -112,13 +58,9 @@ function AuthPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
           Paris Standard
         </p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-          {mode === "signin" ? "Sign in" : "Create consultant account"}
-        </h1>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Organization sign in</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {mode === "signin"
-            ? "Consultants and organization users sign in here."
-            : "The consultant account administers organizations and reviews assessments."}
+          Accounts are created by your consultant. Sign in with the email and password you were given.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -140,8 +82,7 @@ function AuthPage() {
               id="password"
               type="password"
               required
-              minLength={8}
-              autoComplete={mode === "signin" ? "current-password" : "new-password"}
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1.5"
@@ -153,21 +94,18 @@ function AuthPage() {
             </p>
           )}
           <Button type="submit" className="w-full" disabled={busy}>
-            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+            {busy ? "Please wait…" : "Sign in"}
           </Button>
         </form>
 
-        <button
-          className="mt-5 w-full text-center text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-          onClick={() => {
-            setMode(mode === "signin" ? "signup" : "signin");
-            setNotice(null);
-          }}
-        >
-          {mode === "signin"
-            ? "Setting up the platform? Create the consultant account"
-            : "Already have an account? Sign in"}
-        </button>
+        <div className="mt-5 flex flex-col gap-2 text-center text-xs text-muted-foreground">
+          <Link to="/forgot-password" className="underline-offset-4 hover:text-foreground hover:underline">
+            Forgot your password?
+          </Link>
+          <Link to="/consultant" className="underline-offset-4 hover:text-foreground hover:underline">
+            Consultant access
+          </Link>
+        </div>
       </div>
     </div>
   );
