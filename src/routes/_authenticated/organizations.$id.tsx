@@ -107,6 +107,44 @@ function OrganizationDetailPage() {
     }
   }
 
+  async function removeCycle() {
+    if (!cycleId) return;
+    if (!window.confirm("Delete this assessment with all answers and evidence?")) return;
+    try {
+      const result = await deleteAssessmentCycle({ data: { cycleId } });
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      await queryClient.invalidateQueries();
+      toast.success("Assessment deleted");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not delete the assessment");
+    }
+  }
+
+  async function removeOrganization() {
+    if (
+      !window.confirm(
+        `Delete "${organization?.name ?? "this organization"}" with its assessments, evidence and user accounts?`,
+      )
+    )
+      return;
+    try {
+      const result = await deleteOrganization({ data: { organizationId: id } });
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      await queryClient.invalidateQueries();
+      toast.success("Organization deleted");
+      navigate({ to: "/organizations", replace: true });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not delete the organization");
+    }
+  }
+
+
   const loading = requirements.isLoading || cycle.isLoading || cycleData.isLoading;
 
   return (
