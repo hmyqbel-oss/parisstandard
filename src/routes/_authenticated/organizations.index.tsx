@@ -1,9 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
+import { deleteOrganization } from "@/lib/platform.functions";
 import { cyclesQuery, organizationsQuery } from "@/lib/queries";
+
 
 export const Route = createFileRoute("/_authenticated/organizations/")({
   head: () => ({
@@ -24,9 +27,31 @@ export const Route = createFileRoute("/_authenticated/organizations/")({
 });
 
 function OrganizationsPage() {
+  const queryClient = useQueryClient();
   const orgs = useQuery(organizationsQuery());
   const cycles = useQuery(cyclesQuery());
   const latestByOrg = new Map((cycles.data ?? []).map((c) => [c.organization_id, c]));
+
+  async function removeOrganization(id: string, name: string) {
+    if (
+      !window.confirm(
+        `Delete "${name}" with its assessments, evidence and user accounts? This cannot be undone.`,
+      )
+    )
+      return;
+    try {
+      const result = await deleteOrganization({ data: { organizationId: id } });
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      await queryClient.invalidateQueries();
+      toast.success("Organization deleted");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not delete organization");
+    }
+  }
+
 
   return (
     <AppShell
@@ -69,12 +94,23 @@ function OrganizationsPage() {
                     <StatusBadge status={latestByOrg.get(org.id)?.status} />
                   </td>
                   <td className="px-5 py-3 text-right">
-                    <Button asChild size="sm" variant="outline">
-                      <Link to="/organizations/$id" params={{ id: org.id }}>
-                        Open
-                      </Link>
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button asChild size="sm" variant="outline">
+                        <Link to="/organizations/$id" params={{ id: org.id }}>
+                          Open
+                        </Link>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => removeOrganization(org.id, org.name)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </td>
+
                 </tr>
               ))}
             </tbody>
