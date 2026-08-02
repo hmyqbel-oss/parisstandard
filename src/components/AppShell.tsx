@@ -7,6 +7,7 @@ import {
   LogOut,
   ScrollText,
   Settings,
+  Users,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
@@ -18,9 +19,11 @@ import { Button } from "@/components/ui/button";
 const consultantNav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/organizations", label: "Organizations", icon: Building2 },
+  { to: "/users", label: "Users & access", icon: Users },
   { to: "/requirements", label: "Requirements", icon: ScrollText },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
+
 
 const orgNav = [
   { to: "/assessment", label: "My Assessment", icon: ListChecks },

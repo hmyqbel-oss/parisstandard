@@ -20,6 +20,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedRequirementsRouteImport } from './routes/_authenticated/requirements'
 import { Route as AuthenticatedResultsRouteImport } from './routes/_authenticated/results'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedOrganizationsIndexRouteImport } from './routes/_authenticated/organizations.index'
 import { Route as AuthenticatedOrganizationsIdRouteImport } from './routes/_authenticated/organizations.$id'
 import { Route as AuthenticatedOrganizationsNewRouteImport } from './routes/_authenticated/organizations.new'
@@ -79,6 +80,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOrganizationsIndexRoute =
   AuthenticatedOrganizationsIndexRouteImport.update({
     id: '/organizations/',
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/requirements': typeof AuthenticatedRequirementsRoute
   '/results': typeof AuthenticatedResultsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/users': typeof AuthenticatedUsersRoute
   '/organizations/$id': typeof AuthenticatedOrganizationsIdRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/organizations/': typeof AuthenticatedOrganizationsIndexRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/requirements': typeof AuthenticatedRequirementsRoute
   '/results': typeof AuthenticatedResultsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/users': typeof AuthenticatedUsersRoute
   '/organizations/$id': typeof AuthenticatedOrganizationsIdRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/organizations': typeof AuthenticatedOrganizationsIndexRoute
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/_authenticated/requirements': typeof AuthenticatedRequirementsRoute
   '/_authenticated/results': typeof AuthenticatedResultsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/organizations/$id': typeof AuthenticatedOrganizationsIdRoute
   '/_authenticated/organizations/new': typeof AuthenticatedOrganizationsNewRoute
   '/_authenticated/organizations/': typeof AuthenticatedOrganizationsIndexRoute
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
     | '/requirements'
     | '/results'
     | '/settings'
+    | '/users'
     | '/organizations/$id'
     | '/organizations/new'
     | '/organizations/'
@@ -173,6 +183,7 @@ export interface FileRouteTypes {
     | '/requirements'
     | '/results'
     | '/settings'
+    | '/users'
     | '/organizations/$id'
     | '/organizations/new'
     | '/organizations'
@@ -189,6 +200,7 @@ export interface FileRouteTypes {
     | '/_authenticated/requirements'
     | '/_authenticated/results'
     | '/_authenticated/settings'
+    | '/_authenticated/users'
     | '/_authenticated/organizations/$id'
     | '/_authenticated/organizations/new'
     | '/_authenticated/organizations/'
@@ -282,6 +294,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/users': {
+      id: '/_authenticated/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AuthenticatedUsersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/organizations/': {
       id: '/_authenticated/organizations/'
       path: '/organizations'
@@ -312,6 +331,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRequirementsRoute: typeof AuthenticatedRequirementsRoute
   AuthenticatedResultsRoute: typeof AuthenticatedResultsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedOrganizationsIdRoute: typeof AuthenticatedOrganizationsIdRoute
   AuthenticatedOrganizationsNewRoute: typeof AuthenticatedOrganizationsNewRoute
   AuthenticatedOrganizationsIndexRoute: typeof AuthenticatedOrganizationsIndexRoute
@@ -323,6 +343,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRequirementsRoute: AuthenticatedRequirementsRoute,
   AuthenticatedResultsRoute: AuthenticatedResultsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedOrganizationsIdRoute: AuthenticatedOrganizationsIdRoute,
   AuthenticatedOrganizationsNewRoute: AuthenticatedOrganizationsNewRoute,
   AuthenticatedOrganizationsIndexRoute: AuthenticatedOrganizationsIndexRoute,
@@ -342,13 +363,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
