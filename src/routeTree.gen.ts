@@ -20,7 +20,6 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedOrganizationsIndexRouteImport } from './routes/_authenticated/organizations.index'
 import { Route as AuthenticatedOrganizationsIdRouteImport } from './routes/_authenticated/organizations.$id'
 import { Route as AuthenticatedOrganizationsNewRouteImport } from './routes/_authenticated/organizations.new'
-import { Route as ApiPublicTmpResetRouteImport } from './routes/api/public/tmp-reset'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -80,11 +79,6 @@ const AuthenticatedOrganizationsNewRoute =
     path: '/organizations/new',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const ApiPublicTmpResetRoute = ApiPublicTmpResetRouteImport.update({
-  id: '/api/public/tmp-reset',
-  path: '/api/public/tmp-reset',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,7 +90,6 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/organizations/$id': typeof AuthenticatedOrganizationsIdRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
-  '/api/public/tmp-reset': typeof ApiPublicTmpResetRoute
   '/organizations/': typeof AuthenticatedOrganizationsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -109,7 +102,6 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/organizations/$id': typeof AuthenticatedOrganizationsIdRoute
   '/organizations/new': typeof AuthenticatedOrganizationsNewRoute
-  '/api/public/tmp-reset': typeof ApiPublicTmpResetRoute
   '/organizations': typeof AuthenticatedOrganizationsIndexRoute
 }
 export interface FileRoutesById {
@@ -124,7 +116,6 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/organizations/$id': typeof AuthenticatedOrganizationsIdRoute
   '/_authenticated/organizations/new': typeof AuthenticatedOrganizationsNewRoute
-  '/api/public/tmp-reset': typeof ApiPublicTmpResetRoute
   '/_authenticated/organizations/': typeof AuthenticatedOrganizationsIndexRoute
 }
 export interface FileRouteTypes {
@@ -139,7 +130,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/organizations/$id'
     | '/organizations/new'
-    | '/api/public/tmp-reset'
     | '/organizations/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -152,7 +142,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/organizations/$id'
     | '/organizations/new'
-    | '/api/public/tmp-reset'
     | '/organizations'
   id:
     | '__root__'
@@ -166,7 +155,6 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/organizations/$id'
     | '/_authenticated/organizations/new'
-    | '/api/public/tmp-reset'
     | '/_authenticated/organizations/'
   fileRoutesById: FileRoutesById
 }
@@ -174,7 +162,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  ApiPublicTmpResetRoute: typeof ApiPublicTmpResetRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -256,13 +243,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrganizationsNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/tmp-reset': {
-      id: '/api/public/tmp-reset'
-      path: '/api/public/tmp-reset'
-      fullPath: '/api/public/tmp-reset'
-      preLoaderRoute: typeof ApiPublicTmpResetRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -295,18 +275,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  ApiPublicTmpResetRoute: ApiPublicTmpResetRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
