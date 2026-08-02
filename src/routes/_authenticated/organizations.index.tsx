@@ -94,12 +94,23 @@ function OrganizationsPage() {
                     <StatusBadge status={latestByOrg.get(org.id)?.status} />
                   </td>
                   <td className="px-5 py-3 text-right">
-                    <Button asChild size="sm" variant="outline">
-                      <Link to="/organizations/$id" params={{ id: org.id }}>
-                        Open
-                      </Link>
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button asChild size="sm" variant="outline">
+                        <Link to="/organizations/$id" params={{ id: org.id }}>
+                          Open
+                        </Link>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => removeOrganization(org.id, org.name)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </td>
+
                 </tr>
               ))}
             </tbody>
