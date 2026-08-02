@@ -149,7 +149,26 @@ function OrganizationDetailPage() {
               </Button>
             </>
           )}
+          {cycleId && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-destructive hover:text-destructive"
+              onClick={removeCycle}
+            >
+              Delete assessment
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-destructive hover:text-destructive"
+            onClick={removeOrganization}
+          >
+            Delete organization
+          </Button>
         </div>
+
       </div>
 
       {loading ? (
