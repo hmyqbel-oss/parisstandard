@@ -15,7 +15,9 @@ import {
   organizationsQuery,
   requirementsQuery,
 } from "@/lib/queries";
+import { deleteAssessmentCycle, deleteOrganization } from "@/lib/platform.functions";
 import type { ResponseRow } from "@/lib/scoring";
+
 
 export const Route = createFileRoute("/_authenticated/organizations/$id")({
   head: () => ({
