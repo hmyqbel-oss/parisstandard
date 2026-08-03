@@ -218,6 +218,40 @@ export const deleteAssessmentCycle = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+export const createAssessmentCycle = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ organizationId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: isConsultant } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "consultant",
+    });
+    if (!isConsultant) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: cycle, error: cycleError } = await supabaseAdmin
+      .from("assessment_cycles")
+      .insert({ organization_id: data.organizationId })
+      .select("id")
+      .single();
+    if (cycleError || !cycle) {
+      return { ok: false as const, error: cycleError?.message ?? "Could not start assessment" };
+    }
+
+    const { data: requirements } = await supabaseAdmin.from("requirements").select("id");
+    if (requirements?.length) {
+      const { error } = await supabaseAdmin
+        .from("responses")
+        .insert(requirements.map((r) => ({ cycle_id: cycle.id, requirement_id: r.id })));
+      if (error) return { ok: false as const, error: error.message };
+    }
+
+    return { ok: true as const, cycleId: cycle.id };
+  });
+
 export const deleteOrganization = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
