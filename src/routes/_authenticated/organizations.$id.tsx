@@ -15,11 +15,7 @@ import {
   organizationsQuery,
   requirementsQuery,
 } from "@/lib/queries";
-import {
-  createAssessmentCycle,
-  deleteAssessmentCycle,
-  deleteOrganization,
-} from "@/lib/platform.functions";
+import { createAssessmentCycle, deleteAssessmentCycle } from "@/lib/platform.functions";
 import type { ResponseRow } from "@/lib/scoring";
 
 
