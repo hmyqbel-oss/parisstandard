@@ -56,7 +56,7 @@ export function AssessmentBoard({
   onSaveResponse?: ((responseId: string, patch: Partial<ResponseRow>) => void) | undefined;
   onEvidenceChanged?: (() => void) | undefined;
 }) {
-  const [groupMode, setGroupMode] = useState<"principle" | "clause">("principle");
+  const [groupMode, setGroupMode] = useState<"principle" | "clause" | "level">("principle");
   const responseByRequirement = useMemo(
     () => new Map(responses.map((r) => [r.requirement_id, r])),
     [responses],
