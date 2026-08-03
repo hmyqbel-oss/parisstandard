@@ -15,7 +15,11 @@ import {
   organizationsQuery,
   requirementsQuery,
 } from "@/lib/queries";
-import { deleteAssessmentCycle, deleteOrganization } from "@/lib/platform.functions";
+import {
+  createAssessmentCycle,
+  deleteAssessmentCycle,
+  deleteOrganization,
+} from "@/lib/platform.functions";
 import type { ResponseRow } from "@/lib/scoring";
 
 
@@ -123,6 +127,21 @@ function OrganizationDetailPage() {
     }
   }
 
+  async function startNewCycle() {
+    try {
+      const result = await createAssessmentCycle({ data: { organizationId: id } });
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      await queryClient.invalidateQueries();
+      toast.success("New assessment assigned to this organization");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not start a new assessment");
+    }
+  }
+
+
   async function removeOrganization() {
     if (
       !window.confirm(
@@ -187,7 +206,7 @@ function OrganizationDetailPage() {
               </Button>
             </>
           )}
-          {cycleId && (
+          {cycleId ? (
             <Button
               size="sm"
               variant="outline"
@@ -196,6 +215,12 @@ function OrganizationDetailPage() {
             >
               Delete assessment
             </Button>
+          ) : (
+            !cycle.isLoading && (
+              <Button size="sm" onClick={startNewCycle}>
+                Assign new assessment
+              </Button>
+            )
           )}
           <Button
             size="sm"
@@ -212,7 +237,10 @@ function OrganizationDetailPage() {
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading assessment…</p>
       ) : !cycle.data ? (
-        <p className="text-sm text-muted-foreground">This organization has no assessment cycle.</p>
+        <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground">
+          This organization has no assessment cycle. Use “Assign new assessment” to create one.
+        </div>
+
       ) : tab === "assessment" ? (
         <div className="space-y-5">
           <AssessmentBoard
