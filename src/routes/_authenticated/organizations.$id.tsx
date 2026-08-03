@@ -127,6 +127,21 @@ function OrganizationDetailPage() {
     }
   }
 
+  async function startNewCycle() {
+    try {
+      const result = await createAssessmentCycle({ data: { organizationId: id } });
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      await queryClient.invalidateQueries();
+      toast.success("New assessment assigned to this organization");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not start a new assessment");
+    }
+  }
+
+
   async function removeOrganization() {
     if (
       !window.confirm(
