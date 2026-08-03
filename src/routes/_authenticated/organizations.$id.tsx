@@ -237,7 +237,10 @@ function OrganizationDetailPage() {
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading assessment…</p>
       ) : !cycle.data ? (
-        <p className="text-sm text-muted-foreground">This organization has no assessment cycle.</p>
+        <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground">
+          This organization has no assessment cycle. Use “Assign new assessment” to create one.
+        </div>
+
       ) : tab === "assessment" ? (
         <div className="space-y-5">
           <AssessmentBoard
