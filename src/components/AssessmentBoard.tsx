@@ -111,7 +111,6 @@ export function AssessmentBoard({
             </button>
           ))}
         </div>
-        </div>
       </div>
 
       {groups.map(([groupName, items]) => (
