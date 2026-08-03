@@ -56,7 +56,7 @@ export function AssessmentBoard({
   onSaveResponse?: ((responseId: string, patch: Partial<ResponseRow>) => void) | undefined;
   onEvidenceChanged?: (() => void) | undefined;
 }) {
-  const [groupMode, setGroupMode] = useState<"principle" | "clause">("principle");
+  const [groupMode, setGroupMode] = useState<"principle" | "clause" | "level">("principle");
   const responseByRequirement = useMemo(
     () => new Map(responses.map((r) => [r.requirement_id, r])),
     [responses],
@@ -74,7 +74,7 @@ export function AssessmentBoard({
 
   const groups = useMemo(() => {
     const map = groupBy(requirements, (r) =>
-      groupMode === "principle" ? r.principle : r.process_clause,
+      groupMode === "principle" ? r.principle : groupMode === "clause" ? r.process_clause : r.level,
     );
     return [...map.entries()];
   }, [requirements, groupMode]);
@@ -92,7 +92,7 @@ export function AssessmentBoard({
           <Progress value={percent} className="h-2 transition-all duration-500" />
         </div>
         <div className="flex items-center gap-1 rounded-md border border-border bg-muted p-0.5">
-          {(["principle", "clause"] as const).map((value) => (
+          {(["principle", "clause", "level"] as const).map((value) => (
             <button
               key={value}
               onClick={() => setGroupMode(value)}
@@ -103,7 +103,11 @@ export function AssessmentBoard({
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              {value === "principle" ? "By Principle" : "By Process Clause"}
+              {value === "principle"
+                ? "By Principle"
+                : value === "clause"
+                  ? "By Process Clause"
+                  : "By Level"}
             </button>
           ))}
         </div>

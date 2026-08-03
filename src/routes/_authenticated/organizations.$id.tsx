@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, useParams, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -15,11 +15,7 @@ import {
   organizationsQuery,
   requirementsQuery,
 } from "@/lib/queries";
-import {
-  createAssessmentCycle,
-  deleteAssessmentCycle,
-  deleteOrganization,
-} from "@/lib/platform.functions";
+import { createAssessmentCycle, deleteAssessmentCycle } from "@/lib/platform.functions";
 import type { ResponseRow } from "@/lib/scoring";
 
 
@@ -43,7 +39,7 @@ export const Route = createFileRoute("/_authenticated/organizations/$id")({
 
 function OrganizationDetailPage() {
   const { id } = useParams({ from: "/_authenticated/organizations/$id" });
-  const navigate = useNavigate();
+  
   const queryClient = useQueryClient();
 
   const [tab, setTab] = useState<"assessment" | "results">("assessment");
@@ -142,27 +138,6 @@ function OrganizationDetailPage() {
   }
 
 
-  async function removeOrganization() {
-    if (
-      !window.confirm(
-        `Delete "${organization?.name ?? "this organization"}" with its assessments, evidence and user accounts?`,
-      )
-    )
-      return;
-    try {
-      const result = await deleteOrganization({ data: { organizationId: id } });
-      if (!result.ok) {
-        toast.error(result.error);
-        return;
-      }
-      await queryClient.invalidateQueries();
-      toast.success("Organization deleted");
-      navigate({ to: "/organizations", replace: true });
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not delete the organization");
-    }
-  }
-
 
   const loading = requirements.isLoading || cycle.isLoading || cycleData.isLoading;
 
@@ -222,14 +197,6 @@ function OrganizationDetailPage() {
               </Button>
             )
           )}
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-destructive hover:text-destructive"
-            onClick={removeOrganization}
-          >
-            Delete organization
-          </Button>
         </div>
 
       </div>
