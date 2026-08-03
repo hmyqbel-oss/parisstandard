@@ -206,7 +206,7 @@ function OrganizationDetailPage() {
               </Button>
             </>
           )}
-          {cycleId && (
+          {cycleId ? (
             <Button
               size="sm"
               variant="outline"
@@ -215,6 +215,12 @@ function OrganizationDetailPage() {
             >
               Delete assessment
             </Button>
+          ) : (
+            !cycle.isLoading && (
+              <Button size="sm" onClick={startNewCycle}>
+                Assign new assessment
+              </Button>
+            )
           )}
           <Button
             size="sm"
