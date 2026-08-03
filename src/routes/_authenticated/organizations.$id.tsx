@@ -39,7 +39,7 @@ export const Route = createFileRoute("/_authenticated/organizations/$id")({
 
 function OrganizationDetailPage() {
   const { id } = useParams({ from: "/_authenticated/organizations/$id" });
-  const navigate = useNavigate();
+  
   const queryClient = useQueryClient();
 
   const [tab, setTab] = useState<"assessment" | "results">("assessment");
