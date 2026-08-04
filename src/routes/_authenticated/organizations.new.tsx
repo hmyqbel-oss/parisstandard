@@ -212,12 +212,18 @@ function NewOrganizationPage() {
               <Input
                 id="login_email"
                 type="email"
+                inputMode="email"
                 required
+                aria-invalid={Boolean(errors['login_email'])}
                 value={form.login_email}
                 onChange={(e) => update("login_email", e.target.value)}
                 className="mt-1.5"
               />
+              {errors['login_email'] && (
+                <p className="mt-1 text-xs text-destructive">{errors['login_email']}</p>
+              )}
             </div>
+
             <div>
               <Label htmlFor="login_password">Temporary password</Label>
               <Input
