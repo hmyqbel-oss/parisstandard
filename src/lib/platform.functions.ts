@@ -2,15 +2,28 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+const emailField = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .regex(/^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/, "Invalid email address");
+
 const orgSchema = z.object({
   name: z.string().min(2).max(200),
   sector: z.string().max(120).optional().nullable(),
   contact_name: z.string().max(120).optional().nullable(),
-  contact_email: z.string().email().max(200).optional().nullable(),
-  contact_phone: z.string().max(60).optional().nullable(),
-  login_email: z.string().email().max(200),
+  contact_email: emailField(200).optional().nullable(),
+  contact_phone: z
+    .string()
+    .trim()
+    .regex(/^05\d{8}$/, "Phone must be 10 digits starting with 05")
+    .optional()
+    .nullable(),
+  login_email: emailField(200),
   login_password: z.string().min(8).max(128),
 });
+
 
 const requirementsSchema = z.object({
   rows: z
