@@ -28,11 +28,15 @@ export const Route = createFileRoute("/_authenticated/organizations/new")({
   component: NewOrganizationPage,
 });
 
+const EMAIL_RE = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
+const PHONE_RE = /^05\d{8}$/;
+
 function NewOrganizationPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const requirements = useQuery(requirementsQuery());
   const [busy, setBusy] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     name: "",
     sector: "",
@@ -43,22 +47,55 @@ function NewOrganizationPage() {
     login_password: "",
   });
 
+  function fieldError(key: keyof typeof form, value: string): string | null {
+    const v = value.trim();
+    if (key === "contact_email") {
+      if (v && !EMAIL_RE.test(v)) return "Enter a valid email address (e.g. name@example.com)";
+    }
+    if (key === "login_email") {
+      if (!v) return "Login email is required";
+      if (!EMAIL_RE.test(v)) return "Enter a valid email address (e.g. name@example.com)";
+    }
+    if (key === "contact_phone") {
+      if (v && !PHONE_RE.test(v)) return "Phone must be 10 digits starting with 05";
+    }
+    return null;
+  }
+
   function update(key: keyof typeof form, value: string) {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    const next = key === "contact_phone" ? value.replace(/\D/g, "").slice(0, 10) : value;
+    setForm((prev) => ({ ...prev, [key]: next }));
+    setErrors((prev) => {
+      const rest = { ...prev };
+      const message = fieldError(key, next);
+      if (message) rest[key] = message;
+      else delete rest[key];
+      return rest;
+    });
   }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    const nextErrors: Record<string, string> = {};
+    (["contact_email", "login_email", "contact_phone"] as const).forEach((key) => {
+      const message = fieldError(key, form[key]);
+      if (message) nextErrors[key] = message;
+    });
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      toast.error("Please correct the highlighted fields");
+      return;
+    }
     setBusy(true);
     try {
       const result = await createOrganization({
         data: {
-          name: form.name,
+          name: form.name.trim(),
           sector: form.sector || null,
           contact_name: form.contact_name || null,
-          contact_email: form.contact_email || null,
-          contact_phone: form.contact_phone || null,
-          login_email: form.login_email,
+          contact_email: form.contact_email.trim() || null,
+          contact_phone: form.contact_phone.trim() || null,
+          login_email: form.login_email.trim(),
           login_password: form.login_password,
         },
       });
@@ -76,6 +113,7 @@ function NewOrganizationPage() {
       setBusy(false);
     }
   }
+
 
   return (
     <AppShell
