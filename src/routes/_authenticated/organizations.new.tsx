@@ -169,20 +169,35 @@ function NewOrganizationPage() {
               <Input
                 id="contact_email"
                 type="email"
+                inputMode="email"
+                aria-invalid={Boolean(errors['contact_email'])}
                 value={form.contact_email}
                 onChange={(e) => update("contact_email", e.target.value)}
                 className="mt-1.5"
               />
+              {errors['contact_email'] && (
+                <p className="mt-1 text-xs text-destructive">{errors['contact_email']}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="contact_phone">Contact phone</Label>
               <Input
                 id="contact_phone"
+                inputMode="numeric"
+                placeholder="05XXXXXXXX"
+                aria-invalid={Boolean(errors['contact_phone'])}
                 value={form.contact_phone}
                 onChange={(e) => update("contact_phone", e.target.value)}
                 className="mt-1.5"
               />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Saudi mobile format: 10 digits starting with 05.
+              </p>
+              {errors['contact_phone'] && (
+                <p className="mt-1 text-xs text-destructive">{errors['contact_phone']}</p>
+              )}
             </div>
+
           </div>
         </div>
 
