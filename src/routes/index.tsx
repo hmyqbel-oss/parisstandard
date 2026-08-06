@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CTA } from "@/components/ui/call-to-action";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -57,39 +57,32 @@ function Landing() {
         </Button>
       </header>
 
-      <main className="relative z-10 flex flex-1 flex-col justify-center px-6 md:px-14">
-        <h1 className="max-w-4xl text-[clamp(2.2rem,6vw,4.6rem)] font-semibold leading-[1.02] tracking-tight">
-          Donor Effectiveness
-          <br />
-          <span className="text-sidebar-primary">Evaluation</span>
-        </h1>
-        <p className="mt-5 text-sm uppercase tracking-[0.22em] text-sidebar-foreground/60">
-          Paris Declaration maturity standard
-        </p>
+      <main className="relative z-10 grid flex-1 items-center gap-10 px-6 md:px-14 lg:grid-cols-[1.15fr_1fr]">
+        <div>
+          <h1 className="max-w-3xl text-[clamp(2rem,5vw,4rem)] font-semibold leading-[1.03] tracking-tight">
+            Donor Effectiveness
+            <br />
+            <span className="text-sidebar-primary">Evaluation</span>
+          </h1>
+          <p className="mt-4 text-sm uppercase tracking-[0.22em] text-sidebar-foreground/60">
+            Paris Declaration maturity standard
+          </p>
 
-        <div className="mt-10 grid max-w-4xl grid-cols-2 gap-px overflow-hidden rounded-xl border border-sidebar-border bg-sidebar-border md:grid-cols-4">
-          {stats.map((s) => (
-            <div key={s.label} className="bg-sidebar-accent px-5 py-6">
-              <p className="text-3xl font-semibold tracking-tight text-sidebar-primary md:text-4xl">
-                {s.value}
-              </p>
-              <p className="mt-1 text-[0.7rem] uppercase tracking-[0.16em] text-sidebar-foreground/70">
-                {s.label}
-              </p>
-            </div>
-          ))}
+          <div className="mt-8 grid max-w-2xl grid-cols-2 gap-px overflow-hidden rounded-xl border border-sidebar-border bg-sidebar-border md:grid-cols-4">
+            {stats.map((s) => (
+              <div key={s.label} className="bg-sidebar-accent px-4 py-5">
+                <p className="text-2xl font-semibold tracking-tight text-sidebar-primary md:text-3xl">
+                  {s.value}
+                </p>
+                <p className="mt-1 text-[0.65rem] uppercase tracking-[0.16em] text-sidebar-foreground/70">
+                  {s.label}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center gap-3">
-          <Button asChild size="lg">
-            <Link to="/auth">
-              Enter the platform <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="ghost" className="text-sidebar-foreground/80">
-            <Link to="/consultant">Consultant access</Link>
-          </Button>
-        </div>
+        <CTA />
       </main>
 
       <footer className="relative z-10 px-6 py-5 text-[0.7rem] uppercase tracking-[0.18em] text-sidebar-foreground/40 md:px-14">
