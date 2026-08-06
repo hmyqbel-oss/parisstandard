@@ -1,99 +1,99 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ShieldCheck, BarChart3, ClipboardCheck } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Paris Standard Donor Effectiveness Evaluation Platform" },
+      { title: "Paris Standard — Donor Effectiveness Evaluation" },
       {
         name: "description",
         content:
-          "A governance-grade platform for consultants and civil society organizations to evaluate grant effectiveness against the Paris Declaration standard.",
+          "Paris Declaration effectiveness evaluation: 62 requirements, 5 principles, 7 process clauses, 2 maturity levels.",
       },
-      { property: "og:title", content: "Paris Standard Donor Effectiveness Evaluation Platform" },
+      { property: "og:title", content: "Paris Standard — Donor Effectiveness Evaluation" },
       {
         property: "og:description",
-        content:
-          "Assess 62 Paris Declaration requirements, review evidence, and publish maturity dashboards.",
+        content: "62 requirements · 5 principles · 7 process clauses · 2 levels.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Landing,
 });
 
-const features = [
-  {
-    icon: ClipboardCheck,
-    title: "Structured assessment",
-    body: "Every requirement grouped by principle or process clause, with a 0–3 maturity scale, evidence uploads and improvement actions.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Consultant review loop",
-    body: "Submit, review, approve or return with inline notes. Full feedback history is preserved across resubmissions.",
-  },
-  {
-    icon: BarChart3,
-    title: "Executive dashboards",
-    body: "Overall maturity, principle radar, process-clause comparison and Level 1 vs Level 2 breakdown — print-ready.",
-  },
+const stats = [
+  { value: "62", label: "Requirements" },
+  { value: "05", label: "Principles" },
+  { value: "07", label: "Process clauses" },
+  { value: "02", label: "Maturity levels" },
 ];
 
 function Landing() {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
-              Paris Standard
-            </p>
-            <p className="text-sm font-semibold">Donor Effectiveness Evaluation</p>
-          </div>
-          <Button asChild size="sm">
-            <Link to="/auth">Sign in</Link>
-          </Button>
-        </div>
+    <div className="relative flex h-screen flex-col overflow-hidden bg-sidebar text-sidebar-foreground">
+      <div
+        className="pointer-events-none absolute -right-40 -top-40 h-[38rem] w-[38rem] rounded-full opacity-30 blur-3xl"
+        style={{ background: "radial-gradient(circle, var(--sidebar-primary), transparent 65%)" }}
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.07]"
+        style={{
+          backgroundImage:
+            "linear-gradient(var(--sidebar-foreground) 1px, transparent 1px), linear-gradient(90deg, var(--sidebar-foreground) 1px, transparent 1px)",
+          backgroundSize: "72px 72px",
+        }}
+        aria-hidden
+      />
+
+      <header className="relative z-10 flex items-center justify-between px-6 py-6 md:px-14">
+        <p className="text-xs font-semibold uppercase tracking-[0.32em] text-sidebar-primary">
+          Paris Standard
+        </p>
+        <Button asChild size="sm" variant="secondary">
+          <Link to="/auth">Sign in</Link>
+        </Button>
       </header>
 
-      <main>
-        <section className="mx-auto max-w-6xl px-6 py-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Governance &amp; audit tool
-          </p>
-          <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
-            Evaluate grantee organizations against the Paris Declaration effectiveness standard.
-          </h1>
-          <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            Consultants create organization accounts, organizations complete a structured
-            maturity assessment with evidence, and approved cycles become a shareable results
-            dashboard.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild size="lg">
-              <Link to="/auth">Enter the platform</Link>
-            </Button>
-          </div>
-        </section>
+      <main className="relative z-10 flex flex-1 flex-col justify-center px-6 md:px-14">
+        <h1 className="max-w-4xl text-[clamp(2.2rem,6vw,4.6rem)] font-semibold leading-[1.02] tracking-tight">
+          Donor Effectiveness
+          <br />
+          <span className="text-sidebar-primary">Evaluation</span>
+        </h1>
+        <p className="mt-5 text-sm uppercase tracking-[0.22em] text-sidebar-foreground/60">
+          Paris Declaration maturity standard
+        </p>
 
-        <section className="border-t border-border bg-surface">
-          <div className="mx-auto grid max-w-6xl gap-6 px-6 py-16 md:grid-cols-3">
-            {features.map((feature) => (
-              <div key={feature.title} className="rounded-lg border border-border bg-card p-6 shadow-panel">
-                <feature.icon className="h-5 w-5 text-primary" />
-                <h2 className="mt-4 text-base font-semibold">{feature.title}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{feature.body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <div className="mt-10 grid max-w-4xl grid-cols-2 gap-px overflow-hidden rounded-xl border border-sidebar-border bg-sidebar-border md:grid-cols-4">
+          {stats.map((s) => (
+            <div key={s.label} className="bg-sidebar-accent px-5 py-6">
+              <p className="text-3xl font-semibold tracking-tight text-sidebar-primary md:text-4xl">
+                {s.value}
+              </p>
+              <p className="mt-1 text-[0.7rem] uppercase tracking-[0.16em] text-sidebar-foreground/70">
+                {s.label}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-10 flex flex-wrap items-center gap-3">
+          <Button asChild size="lg">
+            <Link to="/auth">
+              Enter the platform <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="ghost" className="text-sidebar-foreground/80">
+            <Link to="/consultant">Consultant access</Link>
+          </Button>
+        </div>
       </main>
 
-      <footer className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-6 py-8 text-xs text-muted-foreground">
-          Paris Standard Donor Effectiveness Evaluation Platform
-        </div>
+      <footer className="relative z-10 px-6 py-5 text-[0.7rem] uppercase tracking-[0.18em] text-sidebar-foreground/40 md:px-14">
+        Scale 0–3 · Evidence-based · Consultant reviewed
       </footer>
     </div>
   );
