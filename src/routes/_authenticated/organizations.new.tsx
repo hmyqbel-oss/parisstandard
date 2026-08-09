@@ -124,6 +124,7 @@ function NewOrganizationPage() {
         { label: "New" },
       ]}
     >
+      <div className="mx-auto w-full max-w-3xl">
       {(requirements.data?.length ?? 0) === 0 && !requirements.isLoading && (
         <div className="mb-5 rounded-lg border border-status-returned/40 bg-status-returned/8 p-4 text-sm">
           Import the requirements master list first — otherwise the new assessment will be empty.
@@ -131,11 +132,20 @@ function NewOrganizationPage() {
       )}
       <form
         onSubmit={handleSubmit}
-        className="max-w-2xl space-y-6 rounded-lg border border-border bg-card p-6 shadow-panel"
+        className="space-y-8 rounded-xl border border-border bg-card p-7 shadow-panel md:p-9"
       >
+        <div className="border-b border-border pb-5 text-center">
+          <div className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-full bg-primary/10 text-primary">
+            <Building2 className="h-5 w-5" />
+          </div>
+          <h2 className="text-base font-semibold">Organization details</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Basic profile of the evaluated organization.
+          </p>
+        </div>
         <div>
-          <h2 className="text-sm font-semibold">Organization details</h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2">
+
             <div className="sm:col-span-2">
               <Label htmlFor="name">Organization name</Label>
               <Input
