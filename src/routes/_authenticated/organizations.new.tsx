@@ -254,7 +254,7 @@ function NewOrganizationPage() {
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-border pt-5">
+        <div className="flex justify-end gap-2 border-t border-border pt-6">
           <Button type="button" variant="outline" onClick={() => navigate({ to: "/organizations" })}>
             Cancel
           </Button>
@@ -263,6 +263,8 @@ function NewOrganizationPage() {
           </Button>
         </div>
       </form>
+      </div>
+
     </AppShell>
   );
 }
