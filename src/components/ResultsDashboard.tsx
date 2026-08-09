@@ -92,6 +92,13 @@ export function ResultsDashboard({
 
   return (
     <div className="space-y-6">
+      <div className="print-only hidden border-b border-border pb-4">
+        <h1 className="text-xl font-semibold">Paris Standard — Assessment Report</h1>
+        <p className="text-sm text-muted-foreground">
+          {organizationName} · Generated {new Date().toLocaleDateString()}
+        </p>
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-[minmax(0,320px)_1fr]">
         <div className="rounded-lg border border-border bg-card p-6 shadow-panel">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
