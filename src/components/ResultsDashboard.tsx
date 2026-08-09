@@ -14,7 +14,9 @@ import {
   YAxis,
   Legend,
 } from "recharts";
-import { Printer } from "lucide-react";
+import { Download, Printer } from "lucide-react";
+import { buildReportCsv, downloadCsv, slugify } from "@/lib/report-export";
+
 import {
   SCORE_LABELS,
   average,
@@ -90,6 +92,13 @@ export function ResultsDashboard({
 
   return (
     <div className="space-y-6">
+      <div className="print-only hidden border-b border-border pb-4">
+        <h1 className="text-xl font-semibold">Paris Standard — Assessment Report</h1>
+        <p className="text-sm text-muted-foreground">
+          {organizationName} · Generated {new Date().toLocaleDateString()}
+        </p>
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-[minmax(0,320px)_1fr]">
         <div className="rounded-lg border border-border bg-card p-6 shadow-panel">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -120,13 +129,23 @@ export function ResultsDashboard({
               <dd className="font-medium tabular-nums">{notApplicable}</dd>
             </div>
           </dl>
-          <Button
-            variant="outline"
-            className="no-print mt-5 w-full"
-            onClick={() => window.print()}
-          >
-            <Printer className="mr-2 h-4 w-4" /> Print / Export PDF
-          </Button>
+          <div className="no-print mt-5 grid gap-2">
+            <Button onClick={() => window.print()}>
+              <Printer className="mr-2 h-4 w-4" /> Download PDF report
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() =>
+                downloadCsv(
+                  `paris-assessment-${slugify(organizationName)}.csv`,
+                  buildReportCsv({ organizationName, requirements, responses }),
+                )
+              }
+            >
+              <Download className="mr-2 h-4 w-4" /> Download data (CSV / Excel)
+            </Button>
+          </div>
+
         </div>
 
         <div className="rounded-lg border border-border bg-card p-5 shadow-panel">
