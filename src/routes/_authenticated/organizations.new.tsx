@@ -211,12 +211,18 @@ function NewOrganizationPage() {
           </div>
         </div>
 
-        <div className="border-t border-border pt-6">
-          <h2 className="text-sm font-semibold">Login credentials</h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Share these with the organization. They can complete the assessment immediately.
-          </p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="border-t border-border pt-7">
+          <div className="text-center">
+            <div className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-full bg-primary/10 text-primary">
+              <KeyRound className="h-5 w-5" />
+            </div>
+            <h2 className="text-base font-semibold">Login credentials</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Share these with the organization. They can complete the assessment immediately.
+            </p>
+          </div>
+          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+
             <div>
               <Label htmlFor="login_email">Login email</Label>
               <Input
