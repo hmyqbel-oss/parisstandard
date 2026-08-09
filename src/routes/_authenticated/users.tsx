@@ -207,14 +207,15 @@ function UsersPage() {
             </div>
           )}
         </div>
-        <div className="flex justify-end border-t border-border pt-4">
+        <div className="flex justify-end border-t border-border pt-5">
           <Button type="submit" disabled={busy}>
             {busy ? "Creating…" : "Create user"}
           </Button>
         </div>
       </form>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-panel">
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-panel">
+
         {data.isLoading ? (
           <p className="px-5 py-10 text-center text-sm text-muted-foreground">Loading…</p>
         ) : users.length === 0 ? (
