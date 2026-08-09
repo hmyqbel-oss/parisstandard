@@ -272,6 +272,8 @@ function UsersPage() {
           </table>
         )}
       </div>
+      </div>
+
     </AppShell>
   );
 }
