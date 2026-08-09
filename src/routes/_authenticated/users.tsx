@@ -125,18 +125,23 @@ function UsersPage() {
       title="Users & access"
       breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Users" }]}
     >
+      <div className="mx-auto w-full max-w-5xl space-y-6">
       <form
         onSubmit={handleCreate}
-        className="mb-6 max-w-3xl space-y-5 rounded-lg border border-border bg-card p-6 shadow-panel"
+        className="mx-auto w-full max-w-3xl space-y-6 rounded-xl border border-border bg-card p-7 shadow-panel md:p-9"
       >
-        <div>
-          <h2 className="text-sm font-semibold">Add a platform user</h2>
+        <div className="border-b border-border pb-5 text-center">
+          <div className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-full bg-primary/10 text-primary">
+            <UserPlus className="h-5 w-5" />
+          </div>
+          <h2 className="text-base font-semibold">Add a platform user</h2>
           <p className="mt-1 text-xs text-muted-foreground">
             Choose whether the account works as a consultant (full access) or as an organization
             user (own assessment only).
           </p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2">
+
           <div>
             <Label htmlFor="email">Email</Label>
             <Input
