@@ -120,13 +120,23 @@ export function ResultsDashboard({
               <dd className="font-medium tabular-nums">{notApplicable}</dd>
             </div>
           </dl>
-          <Button
-            variant="outline"
-            className="no-print mt-5 w-full"
-            onClick={() => window.print()}
-          >
-            <Printer className="mr-2 h-4 w-4" /> Print / Export PDF
-          </Button>
+          <div className="no-print mt-5 grid gap-2">
+            <Button onClick={() => window.print()}>
+              <Printer className="mr-2 h-4 w-4" /> Download PDF report
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() =>
+                downloadCsv(
+                  `paris-assessment-${slugify(organizationName)}.csv`,
+                  buildReportCsv({ organizationName, requirements, responses }),
+                )
+              }
+            >
+              <Download className="mr-2 h-4 w-4" /> Download data (CSV / Excel)
+            </Button>
+          </div>
+
         </div>
 
         <div className="rounded-lg border border-border bg-card p-5 shadow-panel">
