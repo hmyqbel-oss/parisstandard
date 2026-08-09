@@ -14,7 +14,9 @@ import {
   YAxis,
   Legend,
 } from "recharts";
-import { Printer } from "lucide-react";
+import { Download, Printer } from "lucide-react";
+import { buildReportCsv, downloadCsv, slugify } from "@/lib/report-export";
+
 import {
   SCORE_LABELS,
   average,
