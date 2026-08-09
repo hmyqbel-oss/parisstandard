@@ -165,11 +165,26 @@
   box-shadow: var(--shadow-panel);
 }
 
+@page {
+  margin: 14mm;
+}
+
 @media print {
   .no-print {
     display: none !important;
   }
+  .print-only {
+    display: block !important;
+  }
   body {
     background: white;
   }
+  table {
+    break-inside: auto;
+  }
+  tr,
+  .shadow-panel {
+    break-inside: avoid;
+  }
 }
+
