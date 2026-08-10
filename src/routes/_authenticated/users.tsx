@@ -46,9 +46,14 @@ function UsersPage() {
     organization_id: "",
   });
 
+  const currentUser = useCurrentUser();
+  const isConsultant = currentUser.data?.role === "consultant";
+
   const data = useQuery({
     queryKey: ["platform-users"],
     queryFn: () => listPlatformUsers(),
+    enabled: isConsultant,
+    retry: false,
   });
 
   const users = data.data?.users ?? [];
