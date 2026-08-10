@@ -128,6 +128,19 @@ function UsersPage() {
     }
   }
 
+  if (!currentUser.isLoading && !isConsultant) {
+    return (
+      <AppShell title="Users & access">
+        <div className="mx-auto max-w-lg rounded-xl border border-border bg-card p-8 text-center">
+          <h2 className="text-base font-semibold">Consultant access only</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            This page is restricted to consultant accounts.
+          </p>
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell
       title="Users & access"
