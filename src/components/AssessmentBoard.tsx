@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, Paperclip, Trash2, Upload, MessageSquareWarning } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Paperclip,
+  Trash2,
+  Upload,
+  MessageSquareWarning,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -57,6 +65,9 @@ export function AssessmentBoard({
   onEvidenceChanged?: (() => void) | undefined;
 }) {
   const [groupMode, setGroupMode] = useState<"principle" | "clause" | "level">("principle");
+  const [groupIndex, setGroupIndex] = useState(0);
+  const [itemIndex, setItemIndex] = useState(0);
+
   const responseByRequirement = useMemo(
     () => new Map(responses.map((r) => [r.requirement_id, r])),
     [responses],
@@ -79,12 +90,40 @@ export function AssessmentBoard({
     return [...map.entries()];
   }, [requirements, groupMode]);
 
+  const safeGroupIndex = Math.min(groupIndex, Math.max(groups.length - 1, 0));
+  const group = groups[safeGroupIndex];
+  const items = group?.[1] ?? [];
+  const safeItemIndex = Math.min(itemIndex, Math.max(items.length - 1, 0));
+  const current = items[safeItemIndex];
+
+  function selectGroup(index: number) {
+    setGroupIndex(index);
+    setItemIndex(0);
+  }
+
+  function goPrev() {
+    if (safeItemIndex > 0) setItemIndex(safeItemIndex - 1);
+    else if (safeGroupIndex > 0) {
+      const prev = groups[safeGroupIndex - 1];
+      setGroupIndex(safeGroupIndex - 1);
+      setItemIndex(Math.max((prev?.[1].length ?? 1) - 1, 0));
+    }
+  }
+
+  function goNext() {
+    if (safeItemIndex < items.length - 1) setItemIndex(safeItemIndex + 1);
+    else if (safeGroupIndex < groups.length - 1) selectGroup(safeGroupIndex + 1);
+  }
+
+  const isFirst = safeGroupIndex === 0 && safeItemIndex === 0;
+  const isLast = safeGroupIndex === groups.length - 1 && safeItemIndex === items.length - 1;
+
   return (
     <div className="space-y-4">
-      <div className="no-print sticky top-[73px] z-10 flex flex-wrap items-center gap-4 rounded-lg border border-border bg-card/95 px-4 py-3 shadow-panel backdrop-blur">
+      <div className="no-print flex flex-wrap items-center gap-4 rounded-lg border border-border bg-card px-4 py-3 shadow-panel">
         <div className="min-w-45 flex-1">
           <div className="mb-1.5 flex items-center justify-between text-xs font-medium">
-            <span className="text-muted-foreground">Completion</span>
+            <span className="text-muted-foreground">Overall completion</span>
             <span className="tabular-nums">
               {completed}/{total} completed
             </span>
@@ -95,7 +134,10 @@ export function AssessmentBoard({
           {(["principle", "clause", "level"] as const).map((value) => (
             <button
               key={value}
-              onClick={() => setGroupMode(value)}
+              onClick={() => {
+                setGroupMode(value);
+                selectGroup(0);
+              }}
               className={cn(
                 "rounded px-3 py-1.5 text-xs font-semibold transition-colors",
                 groupMode === value
@@ -113,92 +155,116 @@ export function AssessmentBoard({
         </div>
       </div>
 
-      {groups.map(([groupName, items]) => (
-        <GroupSection
-          key={groupName}
-          name={groupName}
-          items={items}
-          responseByRequirement={responseByRequirement}
-          notesByRequirement={notesByRequirement}
-          evidence={evidence}
-          mode={mode}
-          organizationId={organizationId}
-          noteDrafts={noteDrafts}
-          onNoteDraftChange={onNoteDraftChange}
-          onSaveResponse={onSaveResponse}
-          onEvidenceChanged={onEvidenceChanged}
-        />
-      ))}
-    </div>
-  );
-}
+      <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <nav className="no-print space-y-1 rounded-lg border border-border bg-card p-2 shadow-panel lg:sticky lg:top-[73px] lg:self-start">
+          {groups.map(([name, groupItems], index) => {
+            const done = groupItems.filter((i) => isComplete(responseByRequirement.get(i.id))).length;
+            const finished = done === groupItems.length;
+            return (
+              <button
+                key={name}
+                onClick={() => selectGroup(index)}
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-xs font-medium transition-colors",
+                  index === safeGroupIndex
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                <span
+                  className={cn(
+                    "grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[10px] tabular-nums",
+                    finished
+                      ? "border-status-approved bg-status-approved/15 text-status-approved"
+                      : "border-border",
+                  )}
+                >
+                  {finished ? <Check className="h-3 w-3" /> : index + 1}
+                </span>
+                <span className="min-w-0 flex-1 truncate">{name}</span>
+                <span className="shrink-0 tabular-nums text-[10px]">
+                  {done}/{groupItems.length}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
 
-function GroupSection({
-  name,
-  items,
-  responseByRequirement,
-  notesByRequirement,
-  evidence,
-  mode,
-  organizationId,
-  noteDrafts,
-  onNoteDraftChange,
-  onSaveResponse,
-  onEvidenceChanged,
-}: {
-  name: string;
-  items: Requirement[];
-  responseByRequirement: Map<string, ResponseRow>;
-  notesByRequirement: Map<string, ReviewNote[]>;
-  evidence: EvidenceFile[];
-  mode: Mode;
-  organizationId: string;
-  noteDrafts?: Record<string, string> | undefined;
-  onNoteDraftChange?: ((requirementId: string, value: string) => void) | undefined;
-  onSaveResponse?: ((responseId: string, patch: Partial<ResponseRow>) => void) | undefined;
-  onEvidenceChanged?: (() => void) | undefined;
-}) {
-  const [open, setOpen] = useState(true);
-  const done = items.filter((i) => isComplete(responseByRequirement.get(i.id))).length;
+        <section className="overflow-hidden rounded-lg border border-border bg-card shadow-panel">
+          <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{group?.[0] ?? "—"}</p>
+              <p className="text-xs text-muted-foreground">
+                Question {items.length ? safeItemIndex + 1 : 0} of {items.length}
+              </p>
+            </div>
+            <div className="no-print flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={goPrev} disabled={isFirst}>
+                <ChevronLeft className="h-4 w-4" /> Previous
+              </Button>
+              <Button size="sm" onClick={goNext} disabled={isLast}>
+                Next <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </header>
 
-  return (
-    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-panel">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-muted/60"
-      >
-        <ChevronDown
-          className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200", !open && "-rotate-90")}
-        />
-        <span className="flex-1 text-sm font-semibold">{name}</span>
-        <span className="text-xs tabular-nums text-muted-foreground">
-          {done}/{items.length}
-        </span>
-      </button>
-      {open && (
-        <div className="divide-y divide-border border-t border-border">
-          {items.map((req) => (
+          <div className="no-print flex flex-wrap gap-1.5 border-b border-border px-5 py-3">
+            {items.map((item, index) => {
+              const done = isComplete(responseByRequirement.get(item.id));
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setItemIndex(index)}
+                  aria-label={`Question ${index + 1}`}
+                  className={cn(
+                    "h-7 min-w-7 rounded-md border px-1.5 text-[11px] font-semibold tabular-nums transition-colors",
+                    index === safeItemIndex
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : done
+                        ? "border-status-approved/40 bg-status-approved/12 text-status-approved"
+                        : "border-border text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {index + 1}
+                </button>
+              );
+            })}
+          </div>
+
+          {current ? (
             <RequirementItem
-              key={req.id}
-              requirement={req}
-              response={responseByRequirement.get(req.id)}
-              notes={notesByRequirement.get(req.id) ?? []}
+              key={current.id}
+              requirement={current}
+              response={responseByRequirement.get(current.id)}
+              notes={notesByRequirement.get(current.id) ?? []}
               evidence={evidence.filter(
-                (e) => e.response_id === responseByRequirement.get(req.id)?.id,
+                (e) => e.response_id === responseByRequirement.get(current.id)?.id,
               )}
               mode={mode}
               organizationId={organizationId}
-              noteDraft={noteDrafts?.[req.id] ?? ""}
+              noteDraft={noteDrafts?.[current.id] ?? ""}
               onNoteDraftChange={onNoteDraftChange}
               onSaveResponse={onSaveResponse}
               onEvidenceChanged={onEvidenceChanged}
             />
-          ))}
-        </div>
-      )}
-    </section>
+          ) : (
+            <p className="px-5 py-8 text-sm text-muted-foreground">No requirements in this group.</p>
+          )}
+
+          <footer className="no-print flex items-center justify-between gap-3 border-t border-border px-5 py-3">
+            <Button variant="outline" size="sm" onClick={goPrev} disabled={isFirst}>
+              <ChevronLeft className="h-4 w-4" /> Previous
+            </Button>
+            <Button size="sm" onClick={goNext} disabled={isLast}>
+              Next <ChevronRight className="h-4 w-4" />
+            </Button>
+          </footer>
+        </section>
+      </div>
+    </div>
   );
 }
+
 
 function RequirementItem({
   requirement,
