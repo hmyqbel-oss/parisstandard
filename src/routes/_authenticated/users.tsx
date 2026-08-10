@@ -5,6 +5,7 @@ import { UserPlus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,9 +47,14 @@ function UsersPage() {
     organization_id: "",
   });
 
+  const currentUser = useCurrentUser();
+  const isConsultant = currentUser.data?.role === "consultant";
+
   const data = useQuery({
     queryKey: ["platform-users"],
     queryFn: () => listPlatformUsers(),
+    enabled: isConsultant,
+    retry: false,
   });
 
   const users = data.data?.users ?? [];
@@ -120,6 +126,19 @@ function UsersPage() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not delete user");
     }
+  }
+
+  if (!currentUser.isLoading && !isConsultant) {
+    return (
+      <AppShell title="Users & access">
+        <div className="mx-auto max-w-lg rounded-xl border border-border bg-card p-8 text-center">
+          <h2 className="text-base font-semibold">Consultant access only</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            This page is restricted to consultant accounts.
+          </p>
+        </div>
+      </AppShell>
+    );
   }
 
   return (
