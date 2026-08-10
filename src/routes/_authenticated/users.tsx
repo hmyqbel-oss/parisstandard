@@ -5,6 +5,7 @@ import { UserPlus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
